@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مُتتبع الصيانة الدورية للسيارات</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Cairo) for elegant Arabic typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful vehicle & tool icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Smooth transitions */
+        .transition-all-custom {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-slate-900">
+
+    <!-- Header Section -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-lg sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-amber-500 text-slate-950 p-2.5 rounded-2xl shadow-md shadow-amber-500/20">
+                    <i class="fa-solid fa-car-wrench text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold text-white tracking-wide">مُتتبع الصيانة</h1>
+                    <p class="text-xs text-slate-400">حافظ على أداء سيارتك بكل سهولة</p>
+                </div>
+            </div>
+            <!-- Reset Button for easy testing or starting over -->
+            <button onclick="confirmReset()" class="text-slate-400 hover:text-red-400 p-2 rounded-xl hover:bg-slate-700/50 transition-all-custom" title="إعادة تعيين كافة البيانات">
+                <i class="fa-solid fa-arrow-rotate-left text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-md w-full mx-auto px-4 py-6 space-y-6">
+
+        <!-- 1. OIL TRACKER CARD (MAIN SECTION) -->
+        <section class="bg-gradient-to-br from-slate-800 to-slate-850 border border-slate-700 rounded-3xl p-5 shadow-xl relative overflow-hidden">
+            <!-- Decorative Background Element -->
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="flex items-center justify-between mb-4 relative z-10">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-oil-can text-amber-500 text-lg"></i>
+                    <h2 class="text-md font-bold text-slate-200">مُتتبع زيت المحرك (الدهن)</h2>
+                </span>
+                <span id="oilStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    حالة ممتازة
+                </span>
+            </div>
+
+            <!-- Visual Gauge / Countdown Indicator -->
+            <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-800 mb-5 relative z-10">
+                <div class="text-center py-2">
+                    <p class="text-xs text-slate-400 mb-1">المسافة المتبقية لتغيير الزيت</p>
+                    <p id="remainingDistance" class="text-3xl font-black text-amber-400 tracking-tight">0 <span class="text-sm font-normal text-slate-400">كم</span></p>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden mt-3">
+                    <div id="oilProgressBar" class="bg-amber-500 h-full rounded-full transition-all duration-500" style="width: 100%"></div>
+                </div>
+
+                <!-- Target Mileage Info -->
+                <div class="flex justify-between text-xs text-slate-400 mt-3 border-t border-slate-800/80 pt-3">
+                    <div>
+                        <span>العداد الحالي: </span>
+                        <span id="dispCurrentOdometer" class="font-bold text-slate-200">0</span> كم
+                    </div>
+                    <div>
+                        <span>التغيير القادم عند: </span>
+                        <span id="dispNextChange" class="font-bold text-amber-400">0</span> كم
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form to Update Odometer -->
+            <div class="space-y-3 relative z-10">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5" for="currentOdoInput">قراءة العداد الحالية (الكيلومتر الحلي لسيارتك):</label>
+                    <div class="relative">
+                        <input type="number" id="currentOdoInput" placeholder="أدخل الرقم الحالي هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all-custom">
+                        <span class="absolute left-3.5 top-3 text-xs font-bold text-slate-500">كم</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1.5" for="oilChangeInterval">مسافة الزيت الفعّالة:</label>
+                        <select id="oilChangeInterval" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-3 text-white text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all-custom">
+                            <option value="3000">3,000 كم</option>
+                            <option value="5000" selected>5,000 كم</option>
+                            <option value="7000">7,000 كم</option>
+                            <option value="10000">10,000 كم</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="updateOilTracker()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 active:scale-95 transition-all-custom">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            تحديث وقراءة العداد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notification Box (Alert style) -->
+        <div id="alertBox" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-start gap-3 animate-pulse">
+            <i class="fa-solid fa-circle-exclamation text-lg mt-0.5"></i>
+            <div>
+                <h4 class="font-bold text-sm">حان موعد تبديل الدهن!</h4>
+                <p class="text-xs text-red-400/90 mt-1">المسافة المتبقية لتبديل الزيت أقل من 500 كم. يُرجى مراجعة ورشة الصيانة قريباً لتجنب مشاكل المحرك.</p>
+            </div>
+        </div>
+
+        <!-- 2. QUICK MAINTENANCE REGISTRY (BUTTONS & LOGS) -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-screwdriver-wrench text-emerald-500 text-lg"></i>
+                    <h2 class="text-md font-bold text-slate-200">سجل الصيانة السريع للأجزاء الاستهلاكية</h2>
+                </span>
+            </div>
+
+            <!-- Quick Action Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Filter Button -->
+                <button onclick="openMaintenanceModal('filters')" class="bg-slate-800 border border-slate-700 hover:border-amber-500/50 p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 group transition-all-custom active:scale-95">
+                    <div class="bg-amber-500/10 text-amber-400 p-3 rounded-xl group-hover:bg-amber-500 group-hover:text-slate-950 transition-all-custom">
+                        <i class="fa-solid fa-filter text-lg"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-200">تبديل الفلاتر</span>
+                    <span id="last_filters" class="text-[10px] text-slate-400">لم يتم التسجيل</span>
+                </button>
+
+                <!-- Spark Plugs Button -->
+                <button onclick="openMaintenanceModal('sparkplugs')" class="bg-slate-800 border border-slate-700 hover:border-amber-500/50 p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 group transition-all-custom active:scale-95">
+                    <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-xl group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all-custom">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-200">تبديل البلاكات</span>
+                    <span id="last_sparkplugs" class="text-[10px] text-slate-400">لم يتم التسجيل</span>
+                </button>
+
+                <!-- Engine Belts Button -->
+                <button onclick="openMaintenanceModal('belts')" class="bg-slate-800 border border-slate-700 hover:border-amber-500/50 p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 group transition-all-custom active:scale-95">
+                    <div class="bg-blue-500/10 text-blue-400 p-3 rounded-xl group-hover:bg-blue-500 group-hover:text-slate-950 transition-all-custom">
+                        <i class="fa-solid fa-ring text-lg"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-200">أحزمة المحرك (القوايش)</span>
+                    <span id="last_belts" class="text-[10px] text-slate-400">لم يتم التسجيل</span>
+                </button>
+
+                <!-- Brake Pads Button -->
+                <button onclick="openMaintenanceModal('brakes')" class="bg-slate-800 border border-slate-700 hover:border-amber-500/50 p-4 rounded-2xl flex flex-col items-center justify-center text-center gap-2 group transition-all-custom active:scale-95">
+                    <div class="bg-rose-500/10 text-rose-400 p-3 rounded-xl group-hover:bg-rose-500 group-hover:text-slate-950 transition-all-custom">
+                        <i class="fa-solid fa-circle-notch text-lg"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-200">الفلنجات / الفرامل</span>
+                    <span id="last_brakes" class="text-[10px] text-slate-400">لم يتم التسجيل</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. DETAILED LOG HISTORY (TIMELINE) -->
+        <section class="bg-slate-850 border border-slate-800 rounded-3xl p-5 space-y-4">
+            <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
+                جدول الصيانة التاريخي
+            </h3>
+            <div id="logTimeline" class="space-y-3 max-h-[250px] overflow-y-auto pr-1">
+                <!-- Records injected dynamically -->
+                <div class="text-center py-6 text-slate-500 text-xs">
+                    <i class="fa-solid fa-folder-open text-xl mb-2 block"></i>
+                    لا توجد عمليات صيانة مسجلة حتى الآن.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER & RIGHTS (AS REQUESTED) -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-6 text-center space-y-2">
+        <p class="text-xs text-slate-400">صنع بـ <i class="fa-solid fa-heart text-red-500"></i> لمساعدة الوالد العزيز</p>
+        <p class="text-xs text-slate-500 font-semibold tracking-wide">
+            جميع الحقوق محفوظة ® <span class="text-amber-500 font-bold">محمد ماجد الفريجي</span> 2026
+        </p>
+    </footer>
+
+    <!-- POPUP MODAL FOR QUICK REGISTRATION -->
+    <div id="maintenanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative animate-scaleUp">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-700">
+                <h3 id="modalTitle" class="text-md font-bold text-white">تسجيل صيانة جديدة</h3>
+                <button onclick="closeMaintenanceModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <input type="hidden" id="modalTargetType">
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1" for="modalOdo">قراءة العداد عند التبديل (كم):</label>
+                    <input type="number" id="modalOdo" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1" for="modalDate">تاريخ التغيير:</label>
+                    <input type="date" id="modalDate" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber-500">
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="submitMaintenanceLog()" class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition-all-custom active:scale-95">
+                    تأكيد التسجيل وحفظ
+                </button>
+                <button onclick="closeMaintenanceModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2.5 px-4 rounded-xl text-xs transition-all-custom">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM DIALOG BOX FOR CONFIRMATIONS (Avoids native alerts) -->
+    <div id="confirmDialog" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-xs p-5 space-y-4 shadow-2xl text-center">
+            <div class="text-red-400 text-3xl mb-2">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-md font-bold text-white">هل أنت متأكد؟</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">سيتم مسح جميع المسافات المسجلة وسجل الصيانة ولا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="executeReset()" class="flex-grow bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all-custom active:scale-95">
+                    نعم، امسح كل شيء
+                </button>
+                <button onclick="closeConfirmDialog()" class="flex-grow bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2.5 px-4 rounded-xl text-xs transition-all-custom">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP JAVASCRIPT LOGIC -->
+    <script>
+        // Data Structure for the app state
+        let appState = {
+            currentOdometer: 0,
+            lastOilChange: 0,
+            oilInterval: 5000,
+            history: [] // Array of { id, type, date, odometer }
+        };
+
+        const itemNamesAr = {
+            filters: "تبديل الفلاتر",
+            sparkplugs: "تبديل البلاكات",
+            belts: "أحزمة المحرك (القوايش)",
+            brakes: "الفلنجات / الفرامل",
+            oil: "تبديل زيت المحرك"
+        };
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            loadFromStorage();
+            updateUI();
+        };
+
+        // Load data from browser LocalStorage
+        function loadFromStorage() {
+            const storedData = localStorage.getItem('maintenance_tracker_data');
+            if (storedData) {
+                try {
+                    appState = JSON.parse(storedData);
+                    // Standard fallback for existing older models
+                    if (!appState.history) appState.history = [];
+                } catch (e) {
+                    console.error("Error loading saved data, resetting to default.", e);
+                }
+            } else {
+                // Seed with initial demo state to look friendly on first load
+                appState = {
+                    currentOdometer: 85200,
+                    lastOilChange: 82000,
+                    oilInterval: 5000,
+                    history: [
+                        { id: 1, type: 'filters', date: '2026-05-15', odometer: 82000 },
+                        { id: 2, type: 'brakes', date: '2026-04-10', odometer: 78500 }
+                    ]
+                };
+                saveToStorage();
+            }
+        }
+
+        // Save data to browser LocalStorage
+        function saveToStorage() {
+            localStorage.setItem('maintenance_tracker_data', JSON.stringify(appState));
+        }
+
+        // Update UI components dynamically
+        function updateUI() {
+            // Update Odometer Inputs and Displays
+            document.getElementById('currentOdoInput').value = appState.currentOdometer || '';
+            document.getElementById('oilChangeInterval').value = appState.oilInterval;
+            document.getElementById('dispCurrentOdometer').innerText = formatNumber(appState.currentOdometer);
+
+            // Calculate oil milestones
+            const nextChange = Number(appState.lastOilChange) + Number(appState.oilInterval);
+            document.getElementById('dispNextChange').innerText = formatNumber(nextChange);
+
+            const remaining = nextChange - appState.currentOdometer;
+            const remainingElement = document.getElementById('remainingDistance');
+            
+            if (remaining <= 0) {
+                remainingElement.innerText = `0 كم (متأخر!)`;
+                remainingElement.className = "text-3xl font-black text-rose-500 tracking-tight animate-bounce";
+            } else {
+                remainingElement.innerText = `${formatNumber(remaining)} كم`;
+                remainingElement.className = "text-3xl font-black text-amber-400 tracking-tight";
+            }
+
+            // Progress bar calc
+            let percentage = (remaining / appState.oilInterval) * 100;
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+            
+            const progressBar = document.getElementById('oilProgressBar');
+            progressBar.style.width = `${percentage}%`;
+
+            // Change progress bar colors based on remaining distance
+            const statusBadge = document.getElementById('oilStatusBadge');
+            const alertBox = document.getElementById('alertBox');
+
+            if (remaining <= 500) {
+                progressBar.className = "bg-rose-500 h-full rounded-full transition-all duration-500";
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                statusBadge.innerText = "تحتاج تبديل فوراً!";
+                alertBox.classList.remove('hidden');
+            } else if (remaining <= 1500) {
+                progressBar.className = "bg-amber-500 h-full rounded-full transition-all duration-500";
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                statusBadge.innerText = "اقترب موعد التبديل";
+                alertBox.classList.add('hidden');
+            } else {
+                progressBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-500";
+                statusBadge.className = "px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                statusBadge.innerText = "الدهن سليم";
+                alertBox.classList.add('hidden');
+            }
+
+            // Update last maintenance fast-links labels
+            const items = ['filters', 'sparkplugs', 'belts', 'brakes'];
+            items.forEach(item => {
+                const itemLogs = appState.history.filter(h => h.type === item);
+                const element = document.getElementById(`last_${item}`);
+                if (itemLogs.length > 0) {
+                    // Get latest entry
+                    itemLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
+                    const latest = itemLogs[0];
+                    element.innerHTML = `<span class="text-amber-400 font-bold">${formatNumber(latest.odometer)} كم</span><br><span class="text-[9px] text-slate-400">${latest.date}</span>`;
+                } else {
+                    element.innerText = "لم يتم التسجيل";
+                }
+            });
+
+            // Render detailed historical timeline
+            renderHistoryTable();
+        }
+
+        // Render timeline
+        function renderHistoryTable() {
+            const logContainer = document.getElementById('logTimeline');
+            
+            if (appState.history.length === 0) {
+                logContainer.innerHTML = `
+                    <div class="text-center py-6 text-slate-500 text-xs">
+                        <i class="fa-solid fa-folder-open text-xl mb-2 block"></i>
+                        لا توجد عمليات صيانة مسجلة حتى الآن.
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort history by date descending
+            const sortedHistory = [...appState.history].sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            let html = '<div class="space-y-2">';
+            sortedHistory.forEach(item => {
+                let iconClass = 'fa-wrench';
+                let colorClass = 'text-amber-400 bg-amber-500/10';
+
+                if (item.type === 'filters') { iconClass = 'fa-filter'; colorClass = 'text-amber-400 bg-amber-500/10'; }
+                else if (item.type === 'sparkplugs') { iconClass = 'fa-bolt'; colorClass = 'text-emerald-400 bg-emerald-500/10'; }
+                else if (item.type === 'belts') { iconClass = 'fa-ring'; colorClass = 'text-blue-400 bg-blue-500/10'; }
+                else if (item.type === 'brakes') { iconClass = 'fa-circle-notch'; colorClass = 'text-rose-400 bg-rose-500/10'; }
+                else if (item.type === 'oil') { iconClass = 'fa-oil-can'; colorClass = 'text-amber-500 bg-amber-500/20'; }
+
+                html += `
+                    <div class="flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-xl hover:bg-slate-900 transition-all-custom">
+                        <div class="flex items-center gap-3">
+                            <div class="${colorClass} p-2 rounded-lg">
+                                <i class="fa-solid ${iconClass} text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-200">${itemNamesAr[item.type] || item.type}</h4>
+                                <p class="text-[10px] text-slate-400">${item.date}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-300">${formatNumber(item.odometer)} كم</span>
+                            <button onclick="deleteLog(${item.id})" class="text-slate-500 hover:text-red-400 p-1 transition-all-custom" title="حذف">
+                                <i class="fa-regular fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            logContainer.innerHTML = html;
+        }
+
+        // Update main odometer & set new oil change milestone
+        function updateOilTracker() {
+            const inputOdo = document.getElementById('currentOdoInput').value;
+            const interval = document.getElementById('oilChangeInterval').value;
+
+            if (!inputOdo || isNaN(inputOdo) || Number(inputOdo) <= 0) {
+                showToast("الرجاء إدخال قراءة عداد صحيحة ومقبولة!");
+                return;
+            }
+
+            const parsedOdo = Number(inputOdo);
+            appState.currentOdometer = parsedOdo;
+            appState.oilInterval = Number(interval);
+
+            // Automatically check if user wants to set this as the last oil change point
+            // For convenience, if current odometer is larger than previous next-change, 
+            // or if they explicitly choose to update it.
+            const nextChange = Number(appState.lastOilChange) + Number(appState.oilInterval);
+            
+            // If odometer is way past or they clicked with changes, we ask to register an oil change
+            if (parsedOdo >= nextChange) {
+                // Automatically prompt/add a history log
+                appState.lastOilChange = parsedOdo;
+                
+                // Add to history
+                const today = new Date().toISOString().split('T')[0];
+                appState.history.push({
+                    id: Date.now(),
+                    type: 'oil',
+                    date: today,
+                    odometer: parsedOdo
+                });
+                showToast("تم تبديل الزيت وتحديث العداد تلقائياً!");
+            } else {
+                showToast("تم حفظ القراءة الحالية بنجاح!");
+            }
+
+            saveToStorage();
+            updateUI();
+        }
+
+        // Modal Controls for registering other consumables
+        function openMaintenanceModal(type) {
+            document.getElementById('modalTargetType').value = type;
+            document.getElementById('modalTitle').innerText = itemNamesAr[type];
+            document.getElementById('modalOdo').value = appState.currentOdometer || '';
+            
+            // Get today's local date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('modalDate').value = today;
+
+            document.getElementById('maintenanceModal').classList.remove('hidden');
+        }
+
+        function closeMaintenanceModal() {
+            document.getElementById('maintenanceModal').classList.add('hidden');
+        }
+
+        function submitMaintenanceLog() {
+            const type = document.getElementById('modalTargetType').value;
+            const odometer = document.getElementById('modalOdo').value;
+            const date = document.getElementById('modalDate').value;
+
+            if (!odometer || isNaN(odometer) || Number(odometer) <= 0) {
+                showToast("يرجى إدخال قراءة العداد الصحيحة.");
+                return;
+            }
+            if (!date) {
+                showToast("يرجى اختيار تاريخ التبديل.");
+                return;
+            }
+
+            const parsedOdo = Number(odometer);
+
+            // Add new history entry
+            appState.history.push({
+                id: Date.now(),
+                type: type,
+                date: date,
+                odometer: parsedOdo
+            });
+
+            // If the user registered odometer here is newer than current tracker, auto-sync
+            if (parsedOdo > appState.currentOdometer) {
+                appState.currentOdometer = parsedOdo;
+            }
+
+            saveToStorage();
+            updateUI();
+            closeMaintenanceModal();
+            showToast("تم تسجيل الصيانة بنجاح!");
+        }
+
+        // Delete specific log entry
+        function deleteLog(id) {
+            appState.history = appState.history.filter(item => item.id !== id);
+            saveToStorage();
+            updateUI();
+            showToast("تم حذف السجل المحدد.");
+        }
+
+        // Reset All Data Controls
+        function confirmReset() {
+            document.getElementById('confirmDialog').classList.remove('hidden');
+        }
+
+        function closeConfirmDialog() {
+            document.getElementById('confirmDialog').classList.add('hidden');
+        }
+
+        function executeReset() {
+            localStorage.removeItem('maintenance_tracker_data');
+            loadFromStorage();
+            updateUI();
+            closeConfirmDialog();
+            showToast("تم تصفير جميع البيانات وإعادتها للافتراضي.");
+        }
+
+        // Formatting utilities
+        function formatNumber(num) {
+            return Number(num).toLocaleString('en-US');
+        }
+
+        // Custom toast message implementation (Avoid native annoying alerts)
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 text-xs font-bold px-5 py-3 rounded-2xl shadow-xl z-50 animate-bounce transition-all duration-300";
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
